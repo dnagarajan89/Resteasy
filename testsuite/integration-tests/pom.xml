@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-testsuite</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>4.7.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -62,61 +62,104 @@
               <name>!server.home</name>
             </property>
           </activation>
-          <properties>
-              <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
-          </properties>
           <build>
             <plugins>
-                <plugin>
-                    <groupId>org.jboss.galleon</groupId>
-                    <artifactId>galleon-maven-plugin</artifactId>
-                    <configuration>
-                        <install-dir>${jboss.home}</install-dir>
-                        <skip>${skipTests}</skip>
-                        <record-state>false</record-state>
-                        <log-time>${galleon.log.time}</log-time>
-                        <offline>${galleon.offline}</offline>
-                        <plugin-options>
-                            <jboss-maven-dist/>
-                            <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                        </plugin-options>
-                        <feature-packs>
-                            <feature-pack>
-                                <groupId>${project.groupId}</groupId>
-                                <artifactId>galleon-feature-pack</artifactId>
-                                <version>${project.version}</version>
-                                <inherit-configs>false</inherit-configs>
-                                <included-configs>
-                                    <config>
-                                        <model>standalone</model>
-                                        <name>standalone-full.xml</name>
-                                    </config>
-                                    <config>
-                                        <model>standalone</model>
-                                        <name>standalone.xml</name>
-                                    </config>
-                                </included-configs>
-                                <excluded-packages>
-                                    <name>product.conf</name>
-                                    <name>docs.schema</name>
-                                    <name>appclient</name>
-                                    <name>domain</name>
-                                </excluded-packages>
-                            </feature-pack>
-                        </feature-packs>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>server-provisioning</id>
-                            <phase>generate-test-resources</phase>
-                            <goals>
-                                <goal>provision</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
+              <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-dist</artifactId>
+                                    <version>${server.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/test-server</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+              </plugin>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-resteasy</id>
+                        <phase>generate-test-resources</phase>
+                        <configuration>
+                            <target>
+                                <!-- Explicitly remove resteasy-spring contents as the module.xml does not reference resource jars in this case
+                                     so adding jars without removing old ones basically messes up the classloader -->
+                                <delete>
+                                    <fileset
+                                            dir="${project.build.directory}/test-server/wildfly-${server.version}/modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main"
+                                            includes="**/*.jar"/>
+                                </delete>
+                                <unzip src="../../jboss-modules/target/resteasy-jboss-modules-${project.version}.zip"
+                                       dest="${project.build.directory}/test-server/wildfly-${server.version}/modules/system/layers/base"
+                                       overwrite="true"/>
+                                <delete dir="target/dependency-maven-plugin-markers"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+              </plugin>
             </plugins>
           </build>
+          <properties>
+            <jboss.home>${project.build.directory}/test-server/wildfly-${server.version}</jboss.home>
+          </properties>
+        </profile>
+        <!--
+            By default, ${version.resteasy.testsuite} version for RESTEasy restclient is used.
+            But use.mp.from.project.profile allows to use ${project.version} version for RESTEasy restclient.
+                This is useful for test runs where we test resteasy version without RESTEasy restclient available.
+                In this case, tests with RESTEasy restclient are used for compatibility testing only.
+        -->
+        <profile>
+            <id>not.use.mp.from.project.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.use.mp.from.project</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-client-microprofile</artifactId>
+                    <version>${version.resteasy.testsuite}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>use.mp.from.project.profile</id>
+            <activation>
+                <property>
+                    <name>ts.use.mp.from.project</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-client-microprofile</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 
@@ -168,6 +211,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-validator-provider</artifactId>
             <version>${version.resteasy.testsuite}</version>
@@ -207,6 +261,12 @@
             <artifactId>resteasy-atom-provider</artifactId>
             <version>${version.resteasy.testsuite}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-cache-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -269,8 +329,8 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.ejb</groupId>
-            <artifactId>jakarta.ejb-api</artifactId>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -281,8 +341,8 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.1-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -293,20 +353,20 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.jms</groupId>
-            <artifactId>jakarta.jms-api</artifactId>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_2.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <groupId>org.jboss.spec.javax.el</groupId>
+            <artifactId>jboss-el-api_3.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -406,7 +466,7 @@
                 <executions>
                     <execution>
                         <id>initialize-basedirs</id>
-                        <phase>process-test-resources</phase>
+                        <phase>process-test-classes</phase>
                         <configuration>
                             <target>
                                 <!-- Initialize basedir for tested container by copying
@@ -464,7 +524,7 @@
                         <configuration>
                             <target>
                                 <!-- Prepare configuration with more verbose logging for tracing tests -->
-                                <copy file="${container.base.dir.manual.tracing}/configuration/standalone.xml"
+                                <copy file="${container.base.dir.manual.tracing}/configuration/standalone-full.xml"
                                       tofile="${container.base.dir.manual.tracing}/configuration/standalone-tracing.xml"/>
                                 <replace
                                         file="${container.base.dir.manual.tracing}/configuration/standalone-tracing.xml">
@@ -519,6 +579,9 @@
                                 <goal>test</goal>
                             </goals>
                             <configuration>
+                                <systemPropertyVariables>
+                                    <resteasy.microprofile.sseclient.buffersize>5</resteasy.microprofile.sseclient.buffersize>
+                                </systemPropertyVariables>
                                 <excludes>
                                     <!-- Tests requires excluding JsonBindingProvider-->
                                     <exclude>**/JsonBindingAnnotationsJacksonTest.java</exclude>
@@ -536,6 +599,9 @@
                                 <goal>test</goal>
                             </goals>
                             <configuration>
+                                <systemPropertyVariables>
+                                    <resteasy.microprofile.sseclient.buffersize>5</resteasy.microprofile.sseclient.buffersize>
+                                </systemPropertyVariables>
                                 <includes>
                                     <include>**/JsonBindingAnnotationsJacksonTest.java</include>
                                     <include>**/SseJsonEventTest.java</include>
@@ -595,22 +661,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <!-- Required for PicketBox, once this is removed from WildFly this can be removed -->
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-            <id>jboss-enterprise-maven-repository</id>
-            <name>JBoss Enterprise Maven Repository</name>
-            <url>https://maven.repository.redhat.com/ga/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
 </project>

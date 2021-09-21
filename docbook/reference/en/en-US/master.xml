@@ -50,6 +50,7 @@
                 <!ENTITY Json SYSTEM "modules/Json.xml">
                 <!ENTITY Json-p SYSTEM "modules/Json-p.xml">
                 <!ENTITY Jaxb SYSTEM "modules/Jaxb.xml">
+                <!ENTITY Guice SYSTEM "modules/Guice.xml">
                 <!ENTITY Interceptors SYSTEM "modules/Interceptors.xml">
                 <!ENTITY Books SYSTEM "modules/Books.xml">
                 <!ENTITY CDI SYSTEM "modules/CDI.xml">
@@ -67,7 +68,7 @@
    <bookinfo>
       <title>RESTEasy JAX-RS</title>
       <subtitle>RESTFul Web Services for Java</subtitle>
-      <releaseinfo>5.0.0-SNAPSHOT</releaseinfo>
+      <releaseinfo>4.7.2-SNAPSHOT</releaseinfo>
    </bookinfo>
 
    <toc/>
@@ -149,6 +150,7 @@ This one is short
    &RESTEasy_EJB_Integration;
    &RESTEasy_Spring_Integration;
    &CDI;
+    &Guice;
    &RESTEasy_Client_Framework;
    &MicroProfile_Rest_Client;
    &AJAX_Client;

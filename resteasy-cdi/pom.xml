@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-jaxrs-all</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>4.7.2-SNAPSHOT</version>
     </parent>
     <artifactId>resteasy-cdi</artifactId>
     <name>RESTEasy CDI integration module</name>
@@ -18,8 +18,8 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -28,8 +28,8 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.interceptor</groupId>
-            <artifactId>jakarta.interceptor-api</artifactId>
+            <groupId>org.jboss.spec.javax.interceptor</groupId>
+            <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -39,8 +39,8 @@
 
         <!-- This is optional and will work at runtime with or without EJB being present -->
         <dependency>
-            <groupId>jakarta.ejb</groupId>
-            <artifactId>jakarta.ejb-api</artifactId>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
             <optional>true</optional>
         </dependency>
 
