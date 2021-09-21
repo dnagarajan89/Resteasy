@@ -14,18 +14,18 @@
 
     <groupId>org.jboss.resteasy</groupId>
     <artifactId>resteasy-jaxrs-all</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>4.7.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Dependency versions -->
-        <dep.arquillian-bom.version>1.7.0.Alpha10</dep.arquillian-bom.version>
+        <dep.arquillian-bom.version>1.4.1.Final</dep.arquillian-bom.version>
         <version.org.jboss.arquillian.container.arquillian-weld-embedded>2.0.0.Final</version.org.jboss.arquillian.container.arquillian-weld-embedded>
         <version.org.jboss.resteasy.checkstyle>1.0.0.Final</version.org.jboss.resteasy.checkstyle>
-        <version.org.wildfly>24.0.1.Final</version.org.wildfly>
-        <version.org.wildfly.arquillian.wildfly-arquillian>4.0.0.Alpha2</version.org.wildfly.arquillian.wildfly-arquillian>
+        <version.org.wildfly.wildfly-arquillian-container-managed>2.2.0.Final</version.org.wildfly.wildfly-arquillian-container-managed>
+        <version.org.wildfly.wildfly-arquillian-container-remote>2.2.0.Final</version.org.wildfly.wildfly-arquillian-container-remote>
 
         <jboss.home/>
         <!-- print logs to file by default -->
@@ -43,15 +43,8 @@
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
 
-        <!-- Galleon -->
-        <galleon.fork.embedded>true</galleon.fork.embedded>
-        <galleon.log.time>true</galleon.log.time>
-        <galleon.offline>false</galleon.offline>
-
         <!-- Plugins versions -->
         <version.org.jacoco.plugin>0.7.9</version.org.jacoco.plugin>
-        <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
-        <version.org.wildfly.galleon-plugins>5.2.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.plugins.wildfly-maven-plugin>2.1.0.Beta1</version.org.wildfly.plugins.wildfly-maven-plugin>
     </properties>
 
@@ -99,27 +92,6 @@
         </developer>
     </developers>
 
-    <repositories>
-        <!-- Required for provisioning WildFly. Not all dependencies currently exist on Maven Central. This is also
-             useful for when we want to test with versions releases that have not yet been synchronized to Maven Central
-             from JBoss Nexus.
-         -->
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-            <id>jboss-public-repository-group</id>
-            <name>JBoss Public Repository Group</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
-
     <profiles>
         <profile>
             <id>resteasy-default</id>
@@ -134,23 +106,29 @@
                 <module>resteasy-core</module>
                 <module>resteasy-client-api</module>
                 <module>resteasy-client</module>
+                <module>resteasy-client-microprofile-base</module>
+                <module>resteasy-client-microprofile</module>
                 <module>resteasy-client-jetty</module>
                 <module>resteasy-client-vertx</module>
                 <module>resteasy-client-reactor-netty</module>
                 <module>providers</module>
                 <module>resteasy-cache</module>
+                <module>resteasy-guice</module>
                 <module>security</module>
                 <module>resteasy-links</module>
+                <module>resteasy-spring</module>
+                <module>resteasy-spring-web</module>
                 <module>resteasy-jsapi</module>
                 <module>resteasy-cdi</module>
                 <module>resteasy-servlet-initializer</module>
                 <module>resteasy-stats</module>
+                <module>resteasy-reactive-context</module>
                 <module>resteasy-rxjava2</module>
                 <module>resteasy-reactor</module>
                 <module>server-adapters</module>
+                <module>jboss-modules</module>
                 <module>resteasy-wadl</module>
                 <module>resteasy-wadl-undertow-connector</module>
-                <module>galleon-feature-pack</module>
                 <module>arquillian</module>
                 <module>profiling-tests</module>
                 <module>testsuite</module>
@@ -165,13 +143,6 @@
                         <version>${project.version}</version>
                         <type>pom</type>
                         <scope>import</scope>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-ee-galleon-pack</artifactId>
-                        <version>${version.org.wildfly}</version>
-                        <type>zip</type>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
@@ -244,6 +215,15 @@
               </plugins>
           </build>
       </profile>
+      <profile>
+          <id>jboss-repository</id>
+          <repositories>
+              <repository>
+                  <id>jboss</id>
+                  <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+              </repository>
+          </repositories>
+      </profile>
     </profiles>
 
     <contributors>
@@ -254,6 +234,11 @@
             <name>Martin Algesten</name>
         </contributor>
     </contributors>
+
+    <repositories>
+    </repositories>
+    <pluginRepositories>
+    </pluginRepositories>
     <build>
         <pluginManagement>
             <plugins>
@@ -315,17 +300,6 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${version.org.jacoco.plugin}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.jboss.galleon</groupId>
-                    <artifactId>galleon-maven-plugin</artifactId>
-                    <version>${version.org.jboss.galleon}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.wildfly.galleon-plugins</groupId>
-                    <artifactId>wildfly-galleon-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.galleon-plugins}</version>
                 </plugin>
 
                 <plugin>

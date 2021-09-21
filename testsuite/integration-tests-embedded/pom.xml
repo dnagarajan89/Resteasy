@@ -6,7 +6,7 @@
    <parent>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-testsuite</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>4.7.2-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
 
@@ -54,6 +54,12 @@
          <groupId>org.jboss.resteasy</groupId>
          <artifactId>resteasy-core-spi</artifactId>
          <version>${version.resteasy.testsuite}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>org.eclipse.microprofile.config</groupId>
+               <artifactId>microprofile-config-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.jboss.resteasy</groupId>
@@ -66,13 +72,13 @@
          <version>${version.resteasy.testsuite}</version>
       </dependency>
       <dependency>
-          <groupId>jakarta.servlet</groupId>
-          <artifactId>jakarta.servlet-api</artifactId>
+         <groupId>org.jboss.spec.javax.servlet</groupId>
+         <artifactId>jboss-servlet-api_4.0_spec</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
-          <groupId>jakarta.annotation</groupId>
-          <artifactId>jakarta.annotation-api</artifactId>
+         <groupId>org.jboss.spec.javax.annotation</groupId>
+         <artifactId>jboss-annotations-api_1.3_spec</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jboss.spec.javax.ws.rs</groupId>

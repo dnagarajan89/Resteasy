@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-jaxrs-all</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>4.7.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>resteasy-core</artifactId>
@@ -13,6 +13,12 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
@@ -32,13 +38,13 @@
             <optional>true</optional>
         </dependency>
         <!--
-           Needed for jakarta.annotation.security.*
+           Needed for javax.annotation.security.*
            should this dependency be <scope>provided</scope> and only used if
            detected runtime?
         -->
         <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
@@ -46,13 +52,13 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
+            <groupId>org.jboss.spec.javax.xml.bind</groupId>
+            <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -72,7 +78,7 @@
             <artifactId>reactive-streams</artifactId>
         </dependency>
 
-        <!-- jakarta.activation.DataSource provider is required by spec -->
+        <!-- javax.activation.DataSource provider is required by spec -->
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
@@ -86,6 +92,18 @@
         <dependency>
             <groupId>com.ibm.async</groupId>
             <artifactId>asyncutil</artifactId>
+        </dependency>
+
+        <!-- TODO (jrp) Make the implementation optional https://issues.redhat.com/browse/RESTEASY-2890 -->
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Test dependencies -->
@@ -103,8 +121,8 @@
 
         <!-- Required by Hibernate Validator 5.x for testing -->
         <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <groupId>org.jboss.spec.javax.el</groupId>
+            <artifactId>jboss-el-api_3.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
